@@ -32,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<UserResponseDto> getUserById(@PathVariable Long id) {
+    public UserResponseDto getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @DeleteMapping(value = "delete-profile")
-    public String deleteUserProfile(HttpServletRequest request) {
-        return userService.deleteUserProfile(request);
+    public void deleteUserProfile(HttpServletRequest request) {
+        userService.deleteUserProfile(request);
     }
 }

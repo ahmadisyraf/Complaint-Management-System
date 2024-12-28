@@ -10,7 +10,6 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +36,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = mapToEntity(userRequestDto);
 
         RoleEntity userRole = roleRepository.findByRole("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         userEntity.setRoles(Set.of(userRole));
 
@@ -47,15 +46,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserResponseDto> getUserById(Long id) {
-        UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User with " + id + " not found"));
-        return Optional.of(mapToDto(user));
+    public UserResponseDto getUserById(Long id) {
+        return userRepository.findById(id)
+                .map(this::mapToDto)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     @Override
     public List<UserResponseDto> getAllUsers() {
-        return userRepository.findAll().stream().map(this::mapToDto).toList();
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
     @Override
@@ -67,66 +69,42 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
-        Optional<UserEntity> existingUser = userRepository.findById(id);
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(("User not found")));
 
-        if (existingUser.isPresent()) {
-            UserEntity userToUpdate = existingUser.get();
+        user.setUsername(userRequestDto.getUsername());
+        user.setEmail(userRequestDto.getEmail());
 
-            userToUpdate.setUsername(userRequestDto.getUsername());
-            userToUpdate.setEmail(userRequestDto.getEmail());
-
-            UserEntity updatedUser = userRepository.save(userToUpdate);
-
-            return mapToDto(updatedUser);
-        } else {
-            throw new UserNotFoundException("User with " + id + " not found");
-        }
+        return mapToDto(userRepository.save(user));
     }
 
     @Override
     public UserResponseDto updateCurrentUser(HttpServletRequest request, UserRequestDto userRequestDto) {
-        String token = jwtUtil.extractToken(request);
+        Claims payload = jwtUtil.getPayload(jwtUtil.extractToken(request));
 
-        Claims payload = jwtUtil.getPayload(token);
+        UserEntity user = userRepository.findByEmail(payload.getSubject())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Optional<UserEntity> existingUser = userRepository.findByEmail(payload.getSubject());
+        user.setUsername(userRequestDto.getUsername());
+        user.setEmail(userRequestDto.getEmail());
 
-        if (existingUser.isPresent()) {
-            UserEntity userToUpdate = existingUser.get();
-
-            userToUpdate.setUsername(userRequestDto.getUsername());
-            userToUpdate.setEmail(userRequestDto.getEmail());
-
-            UserEntity updatedUser = userRepository.save(userToUpdate);
-
-            return mapToDto(updatedUser);
-        } else {
-            throw new UserNotFoundException("User with " + payload.getSubject() + " not found");
-        }
+        return mapToDto(userRepository.save(user));
     }
 
     @Override
     public UserResponseDto getUserProfile(HttpServletRequest request) {
-        String token = jwtUtil.extractToken(request);
+        Claims payload = jwtUtil.getPayload(jwtUtil.extractToken(request));
 
-        Claims payload = jwtUtil.getPayload(token);
-
-        UserEntity profile = userRepository.findByEmail(payload.getSubject())
-                .orElseThrow(() -> new UserNotFoundException("User with email " + payload.getSubject() + " not found"));
-
-        return mapToDto(profile);
+        return userRepository.findByEmail(payload.getSubject())
+                .map(this::mapToDto)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     @Override
-    public String deleteUserProfile(HttpServletRequest request) {
-
-        String token = jwtUtil.extractToken(request);
-
-        Claims payload = jwtUtil.getPayload(token);
+    public void deleteUserProfile(HttpServletRequest request) {
+        Claims payload = jwtUtil.getPayload(jwtUtil.extractToken(request));
 
         userRepository.deleteByEmail(payload.getSubject());
-
-        return "User deleted";
     }
 
     private UserEntity mapToEntity(UserRequestDto userRequestDto) {

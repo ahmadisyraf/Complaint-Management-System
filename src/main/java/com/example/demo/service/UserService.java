@@ -12,7 +12,7 @@ public interface UserService {
 
     UserResponseDto saveUser(UserRequestDto userRequestDto);
 
-    Optional<UserResponseDto> getUserById(Long id);
+    UserResponseDto getUserById(Long id);
 
     List<UserResponseDto> getAllUsers();
 
@@ -24,5 +24,5 @@ public interface UserService {
 
     UserResponseDto getUserProfile(HttpServletRequest request);
 
-    String deleteUserProfile(HttpServletRequest request);
+    void deleteUserProfile(HttpServletRequest request);
 }
