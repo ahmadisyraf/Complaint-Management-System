@@ -12,6 +12,9 @@
 
 ```bash
 git clone https://your-repository-url
+```
+
+```bash
 cd your-repository-directory
 ```
 
