@@ -43,5 +43,3 @@ To stop the Docker services:
 ```bash
 docker-compose down
 ```
-
----
