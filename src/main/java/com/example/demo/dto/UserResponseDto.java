@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import com.example.demo.entity.RoleEntity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 
 import java.time.LocalDateTime;
 import java.util.Set;
