@@ -43,23 +43,5 @@ services:
     networks:
       - mynetwork
 
-  # Spring Boot app service
-  app:
-    build:
-      context: . # Assuming the Dockerfile is in the same directory as docker-compose.yml
-    container_name: demo_container
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_container:5432/mydb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-    ports:
-      - "8081:8081"
-    depends_on:
-      - postgres
-    networks:
-      - mynetwork
-
 volumes:
   postgres_data:
