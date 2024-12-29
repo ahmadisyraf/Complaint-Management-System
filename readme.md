@@ -26,7 +26,7 @@ Run this command to build and start the services:
 docker-compose up --build
 ```
 
-### 3. Run Spring Boot Locally (Without Docker)
+### 3. Run Spring Boot Locally
 
 If you prefer to run the Spring Boot app locally instead of inside the container, use the following Maven command:
 
